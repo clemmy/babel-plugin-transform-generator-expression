@@ -1,0 +1,12 @@
+{
+  "name": "babel-plugin-transform-generator-expression",
+  "version": "1.0.0",
+  "description": "Plugin to enable generator expressions",
+  "main": "src/index.js",
+  "author": "clemmy",
+  "license": "MIT",
+  "dependencies": {
+    "babel-runtime": "^6.9.0",
+    "babel-types": "^6.18.0"
+  }
+}
