@@ -48,7 +48,7 @@ npm install --save-dev babel-plugin-transform-generator-expressions babel-plugin
 
 ```json
 {
-  "plugins": ["transform-do-expressions", ["transform-generator-expressions", { "enableCompletionValue", false }]]
+  "plugins": ["transform-do-expressions", ["transform-generator-expressions", { "enableCompletionValue": false }]]
 }
 ```
 
