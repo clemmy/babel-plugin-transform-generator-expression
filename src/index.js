@@ -53,23 +53,33 @@ module.exports = function({types: t}) {
         /*
          * Wraps the body in a labelled block, wrapped by a do expression, which is returned in an immediately invoked generator function
          */
-        exit(path) {
+        exit(path, file) {
           const labelIdentifier = path.scope.generateUidIdentifier("label");
           const gexpContents = path.get("body");
 
-          path.traverse(GeneratorExpressionVisitor, {labelIdentifier});
+          path.traverse(GeneratorExpressionVisitor, {
+            labelIdentifier
+          });
 
           const labeledStatement = t.labeledStatement(labelIdentifier, gexpContents.node);
-          const blockReturningDoExpr = t.blockStatement([
-            t.returnStatement(
-              t.doExpression(
-                t.blockStatement([
-                  labeledStatement
-                ])
+
+          let newGeneratorContents;
+          if (file.opts.enableCompletionValue) {
+            newGeneratorContents = t.blockStatement([
+              t.returnStatement(
+                t.doExpression(
+                  t.blockStatement([
+                    labeledStatement
+                  ])
+                )
               )
-            )
-          ]);
-          const generatorFnc = t.functionExpression(null, [], blockReturningDoExpr, true, false);
+            ]);
+          } else {
+            newGeneratorContents = t.blockStatement([
+              labeledStatement
+            ]);
+          }
+          const generatorFnc = t.functionExpression(null, [], newGeneratorContents, true, false);
           const immediateInvokedGeneratorFunction = t.callExpression(generatorFnc, []);
           path.replaceWith(immediateInvokedGeneratorFunction, path.node);
         }
