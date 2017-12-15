@@ -10,6 +10,8 @@ from [ECMAScript Generator Expressions Proposal](https://github.com/sebmarkbage/
 
 In order to use this API, you must also be using a version of Babylon that supports GeneratorExpression nodes, such as the one found [here](https://github.com/clemmy/babylon/tree/general-gexp-6.18).
 
+You can alternatively experiment with the syntax on this [CodePen](https://codepen.io/clemmy/pen/zpGaNv?editors=1000).
+
 ### Examples
 
 ```js
