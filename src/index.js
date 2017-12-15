@@ -1,4 +1,52 @@
 module.exports = function({types: t}) {
+  const BREAKABLE_CONTAINER_NODE_TYPES = [
+    "GeneratorExpression",
+    "ForStatement",
+    "DoWhileStatement",
+    "WhileStatement",
+    "ForInStatement",
+    "ForOfStatement"
+  ];
+
+  // nodes that have their own scope
+  const CONTEXTUAL_CONTAINER_NODE_TYPES = [
+    "FunctionExpression",
+    "FunctionDeclaration",
+    "Program",
+    "ClassMethod",
+    "ObjectMethod"
+  ];
+
+  const GeneratorExpressionVisitor = {
+    BreakStatement: {
+      exit(path) {
+        const firstHit = path.find(p => BREAKABLE_CONTAINER_NODE_TYPES.includes(p.node.type));
+        if (!firstHit || !firstHit.isGeneratorExpression() || !this.labelIdentifier) {
+          return;
+        }
+        path.node.label = this.labelIdentifier;
+      }
+    },
+    ThisExpression: {
+      // bind this with outer scope's this
+      enter(path) {
+        const firstHit = path.find(p => CONTEXTUAL_CONTAINER_NODE_TYPES.includes(p.node.type));
+
+        if (firstHit.isProgram()) {
+          path.replaceWith(t.Identifier("undefined"), path.node);
+        } else {
+          const blockStatement = firstHit.get("body");
+          if (!blockStatement.node.thisIdentifier) {
+            const thisIdentifier = blockStatement.scope.generateUidIdentifier("this");
+            blockStatement.node.thisIdentifier = thisIdentifier;
+            const assignThis = t.variableDeclaration("var", [t.variableDeclarator(blockStatement.node.thisIdentifier, t.thisExpression())]);
+            blockStatement.unshiftContainer("body", assignThis);
+          }
+        }
+      }
+    }
+  };
+
   return {
     visitor: {
       GeneratorExpression: {
@@ -29,24 +77,3 @@ module.exports = function({types: t}) {
     }
   };
 }
-
-const BREAKABLE_CONTAINER_NODE_TYPES = [
-      "GeneratorExpression",
-      "ForStatement",
-      "DoWhileStatement",
-      "WhileStatement",
-      "ForInStatement",
-      "ForOfStatement"
-    ];
-
-const GeneratorExpressionVisitor = {
-  BreakStatement: {
-    exit(path) {
-      const firstHit = path.find(p => BREAKABLE_CONTAINER_NODE_TYPES.includes(p.node.type));
-      if (!firstHit || !firstHit.isGeneratorExpression() || !this.labelIdentifier) {
-        return;
-      }
-      path.node.label = this.labelIdentifier;
-    }
-  }
-};
